@@ -18,7 +18,10 @@ export class Doctor {
   email: string;
 
   @Prop({ required: true })
-  experience: number;   // Years of experience
+  experience: number; 
+  
+  @Prop({ required: true })
+  password: string;
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

@@ -12,11 +12,14 @@ export class Doctor extends Document {
     @Prop ({required:true})
     experience: number;
 
-    @Prop({ require:true})
+    @Prop({ required:true})
     contact: string;
 
-    @Prop({require:true})
-    email: string
+    @Prop({required:true})
+    email: string;
+
+    @Prop({required:true})
+    password:string;
 
 }
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);

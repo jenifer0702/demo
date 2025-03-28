@@ -1,21 +1,36 @@
-import { Injectable } from '@nestjs/common';
+import {Injectable, UnauthorizedException} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel} from '@nestjs/mongoose';
+import {Model} from 'mongoose';
+import * as bcrypt from 'bcrypt';
+import {Doctor} from '../doctor/doctor.schema';
+import { Patient } from 'src/patient/patient.schema';
 
 @Injectable()
 export class AuthService {
-    private users = [
-        { id: 1, username: 'admin', password: 'admin123' },
-        { id: 2, username: 'user', password: 'user123' }
-    ];
+    constructor(
+        private jwtService: JwtService,
+        @InjectModel(Doctor.name) private doctorModel: Model<Doctor>,
+        @InjectModel(Patient.name) private patientModel: Model<Patient>,
 
-    constructor(private jwtService: JwtService) {}
+    ){}
+    async validatorUser(email: string,password:string){
+        const doctor = await this.doctorModel.findOne({ email});
+        const patient = await this.patientModel.findOne({email});
 
-    async validateUser(username: string, password: string): Promise<string | null> {
-        const user = this.users.find(u => u.username === username && u.password === password);
-        if (user) {
-            const payload = { username: user.username, sub: user.id };
-            return this.jwtService.sign(payload);
-        }
-        return null;
+         if(doctor && await bcrypt.compare(password, doctor.password)) {
+            return { userId: doctor._id, role: 'doctor',email: doctor.email };
+
+         }
+         if(patient && await bcrypt.compare( password, patient.password)){
+            return { UserId : patient.id, role: 'patient', email: patient.email};
+         }
+         throw new UnauthorizedException('Invalid credentials');
+    }
+    async login(user:any){
+        const playload = { userId :user.userId, role: user.role, email: user.email};
+        return {
+            access_token:this.jwtService.sign(playload),
+        };
     }
 }

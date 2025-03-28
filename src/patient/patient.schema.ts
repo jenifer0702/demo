@@ -24,7 +24,13 @@ export class Patient {
   diagnosis: string;
 
   @Prop({ required: true })
-  doctorId: string;   // Reference to the doctor
+  doctorId: string;  
+
+  @Prop({ required: true , unique:true})
+  email: string;
+
+  @Prop({ required: true })
+  password:string;
 }
 
 export const PatientSchema = SchemaFactory.createForClass(Patient);
