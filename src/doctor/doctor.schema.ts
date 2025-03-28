@@ -11,16 +11,16 @@ export class Doctor {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true, select: false }) // Ensure password is not selected by default
+  @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, min: 25 }) // ✅ Enforce min age
   age: number;
 
   @Prop({ required: true })
   specialist: string;
 
-  @Prop({ required: true, default: 'doctor' }) // ✅ Ensure role is always set
+  @Prop({ required: true, default: 'doctor' }) // ✅ Add role field
   role: string;
 }
 

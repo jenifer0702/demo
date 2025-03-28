@@ -11,10 +11,10 @@ export class Patient {
   @Prop({ required: true, unique: true })
   email: string;
 
-  @Prop({ required: true, select: false }) // Ensure password is not selected by default
+  @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, min: 18 }) // ✅ Enforce min age
   age: number;
 
   @Prop({ required: true })
@@ -23,8 +23,8 @@ export class Patient {
   @Prop({ required: true })
   diagnosis: string;
 
-  @Prop({ required: true, default: 'patient' }) // ✅ Ensure role is always set
-  role: string;
+  @Prop({ required: true, type: String }) // ✅ Add doctorId (references Doctor)
+  doctorId: string;
 }
 
 export const PatientSchema = SchemaFactory.createForClass(Patient);

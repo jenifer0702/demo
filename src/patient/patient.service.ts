@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
@@ -10,7 +10,7 @@ export class PatientService {
   constructor(@InjectModel(Patient.name) private patientModel: Model<PatientDocument>) {}
 
   async registerPatient(patientDto: CreatePatientDto): Promise<any> {
-    const { name, email, password, age, gender, diagnosis } = patientDto;
+    const { name, email, password, age, gender, diagnosis, doctorId } = patientDto; // ✅ Include doctorId
 
     if (age < 18) {
       throw new UnauthorizedException('Patient must be at least 18 years old');
@@ -24,6 +24,7 @@ export class PatientService {
       age,
       gender,
       diagnosis,
+      doctorId, // ✅ Ensure doctorId is saved
     });
 
     await patient.save();
@@ -31,6 +32,15 @@ export class PatientService {
   }
 
   async getPatients() {
-    return this.patientModel.find().select('-password'); // Exclude password from response
+    return this.patientModel.find().select('-password'); // Exclude password for security
+  }
+
+  // ✅ Fetch Patient by ID
+  async getPatientById(id: string) {
+    const patient = await this.patientModel.findById(id).select('-password'); // Hide password
+    if (!patient) {
+      throw new NotFoundException('Patient not found');
+    }
+    return patient;
   }
 }

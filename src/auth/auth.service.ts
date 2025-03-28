@@ -14,7 +14,9 @@ export class AuthService {
     private jwtService: JwtService
   ) {}
 
-  // ✅ Register a Doctor
+  /**
+   * Register a new doctor
+   */
   async registerDoctor(doctorDto: any): Promise<any> {
     const { name, email, password, age, specialist } = doctorDto;
 
@@ -29,16 +31,18 @@ export class AuthService {
       password: hashedPassword,
       age,
       specialist,
-      role: 'doctor',
+      role: 'doctor', // ✅ Ensure role exists
     });
 
     await doctor.save();
     return { message: 'Doctor registered successfully' };
   }
 
-  // ✅ Register a Patient
+  /**
+   * Register a new patient
+   */
   async registerPatient(patientDto: any): Promise<any> {
-    const { name, email, password, age, gender, diagnosis } = patientDto;
+    const { name, email, password, age, gender, diagnosis, doctorId } = patientDto;
 
     if (age < 18) {
       throw new UnauthorizedException('Patient must be at least 18 years old');
@@ -52,18 +56,21 @@ export class AuthService {
       age,
       gender,
       diagnosis,
-      role: 'patient',
+      doctorId,
+      role: 'patient', // ✅ Ensure role exists
     });
 
     await patient.save();
     return { message: 'Patient registered successfully' };
   }
 
-  // ✅ Login for both Doctors and Patients
+  /**
+   * Login a user (either doctor or patient)
+   */
   async login(email: string, password: string) {
     const user =
-      (await this.doctorModel.findOne({ email }).select('+password role')) ||
-      (await this.patientModel.findOne({ email }).select('+password role'));
+      (await this.doctorModel.findOne({ email }).select('+password +role')) ||
+      (await this.patientModel.findOne({ email }).select('+password +role'));
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -74,17 +81,22 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = { sub: user._id, email: user.email, role: user.role }; // ✅ role now exists
+    // ✅ Ensure role is included in payload
+    const payload = { sub: user._id, email: user.email, role: user.role };
     return { access_token: this.jwtService.sign(payload) };
   }
 
-  // ✅ Get All Doctors (for reference)
+  /**
+   * Get a list of all doctors
+   */
   async findDoctors() {
-    return this.doctorModel.find().select('-password'); // Exclude password
+    return this.doctorModel.find().select('-password'); // ✅ Exclude password
   }
 
-  // ✅ Get All Patients (for reference)
+  /**
+   * Get a list of all patients (only for doctors)
+   */
   async findPatients() {
-    return this.patientModel.find().select('-password'); // Exclude password
+    return this.patientModel.find().select('-password'); // ✅ Exclude password
   }
 }
