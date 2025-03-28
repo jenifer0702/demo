@@ -22,6 +22,9 @@ export class Doctor {
   
   @Prop({ required: true })
   password: string;
+
+  @Prop({ default:'doctor' })
+  role:string;
 }
 
 export const DoctorSchema = SchemaFactory.createForClass(Doctor);
