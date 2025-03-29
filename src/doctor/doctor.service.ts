@@ -1,27 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import {Model } from 'mongoose';
-import { Doctor, DoctorDocument } from './doctor.schema';
+import { Model } from 'mongoose';
+import { Doctor } from './doctor.entity';
+import { DoctorDto } from './doctor.dto';
 
 @Injectable()
 export class DoctorService {
-  constructor(
-    @InjectModel(Doctor.name) private doctorModel: Model<DoctorDocument>,
-  ) {}
+  constructor(@InjectModel(Doctor.name) private doctorModel: Model<Doctor>) {}
 
-  
-  async create(doctor: Doctor): Promise<DoctorDocument> {
-    const newDoctor = new this.doctorModel(doctor);
-    return await newDoctor.save();
+  async create(doctorDto: DoctorDto) {
+    const doctor = new this.doctorModel(doctorDto);
+    return doctor.save();
   }
 
-  
-  async findAll(): Promise<DoctorDocument[]> {
-    return await this.doctorModel.find().exec();
+  async findAll() {
+    return this.doctorModel.find().exec();
   }
 
-
-  async findOne(id: string): Promise<DoctorDocument> {
+  async findOne(id: string) {
     const doctor = await this.doctorModel.findById(id).exec();
     if (!doctor) {
       throw new NotFoundException('Doctor not found');
@@ -29,26 +25,11 @@ export class DoctorService {
     return doctor;
   }
 
-
-  async update(id: string, doctor: Partial<Doctor>): Promise<DoctorDocument> {
-    const updatedDoctor = await this.doctorModel.findByIdAndUpdate(
-      id,
-      doctor,
-      { new: true },
-    ).exec();
-
-    if (!updatedDoctor) {
-      throw new NotFoundException('Doctor not found');
-    }
-    return updatedDoctor;
+  async update(id: string, doctorDto: DoctorDto) {
+    return this.doctorModel.findByIdAndUpdate(id, doctorDto, { new: true });
   }
 
-  
-  async delete(id: string): Promise<DoctorDocument> {
-    const deletedDoctor = await this.doctorModel.findByIdAndDelete(id).exec();
-    if (!deletedDoctor) {
-      throw new NotFoundException('Doctor not found');
-    }
-    return deletedDoctor;
+  async delete(id: string) {
+    return this.doctorModel.findByIdAndDelete(id).exec();
   }
 }

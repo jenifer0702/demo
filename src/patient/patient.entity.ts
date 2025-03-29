@@ -1,28 +1,30 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
-@Entity()
-export class Patient {
-  @PrimaryGeneratedColumn()
-  id: number;
+@Schema({ timestamps: true })
+export class Patient extends Document {
+  @Prop({ required: true })
+  name: string;
 
-  @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
-
-  @Column({ unique: true })
+  @Prop({ required: true, unique: true })
   email: string;
 
-  @Column()
-  phone: string;
+  @Prop({ required: true })
+  password: string;
 
-  @Column({ nullable: true })
-  age: number;
+  @Prop({required : true})
+  diagnosis :string;
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @Prop({ required :true})
+  age:string;
 
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @Prop({required:true})
+  gender:string;
+
+
+
+  @Prop({ default: 'patient' })
+  role: string;
 }
+
+export const PatientSchema = SchemaFactory.createForClass(Patient);

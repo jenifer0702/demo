@@ -1,17 +1,19 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, Patch, UseGuards } from '@nestjs/common';
 import { PatientService } from './patient.service';
-import { Patient } from './patient.schema';
+import { PatientDto } from './patient.dto';
+import { JwtAuthGuard } from '../auth/jwt.guard';
 
-@Controller('patients')
+@Controller('patient')
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
-  @Post()
-  async create(@Body() patient: Patient) {
-    return this.patientService.create(patient);
+  @Post('create')
+  async create(@Body() patientDto: PatientDto) {
+    return this.patientService.create(patientDto);
   }
 
-  @Get()
+  @UseGuards(JwtAuthGuard)
+  @Get('all')
   async findAll() {
     return this.patientService.findAll();
   }
@@ -21,11 +23,13 @@ export class PatientController {
     return this.patientService.findOne(id);
   }
 
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() patient: Patient) {
-    return this.patientService.update(id, patient);
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() patientDto: PatientDto) {
+    return this.patientService.update(id, patientDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@Param('id') id: string) {
     return this.patientService.delete(id);

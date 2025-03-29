@@ -1,33 +1,49 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, Param, Delete, UseGuards, Patch, Query } from '@nestjs/common';
 import { DoctorService } from './doctor.service';
-import { Doctor } from './doctor.schema';
+import { DoctorDto } from './doctor.dto';
+import { JwtAuthGuard } from '../auth/jwt.guard';
+import { isValidObjectId } from 'mongoose';
 
-@Controller('doctors')
+@Controller('doctor')
 export class DoctorController {
   constructor(private readonly doctorService: DoctorService) {}
 
-  @Post()
-  async create(@Body() doctor: Doctor) {
-    return this.doctorService.create(doctor);
+  // Separate the create route properly
+  @Post('create')
+  async create(@Body() doctorDto: DoctorDto) {
+    return this.doctorService.create(doctorDto);
   }
 
-  @Get()
+  @UseGuards(JwtAuthGuard)
+  @Get('all')
   async findAll() {
     return this.doctorService.findAll();
   }
 
+  // Validate ID format before querying MongoDB
   @Get(':id')
   async findOne(@Param('id') id: string) {
+    if (!isValidObjectId(id)) {
+      return { error: 'Invalid ID format' };
+    }
     return this.doctorService.findOne(id);
   }
 
-  @Put(':id')
-  async update(@Param('id') id: string, @Body() doctor: Doctor) {
-    return this.doctorService.update(id, doctor);
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id')
+  async update(@Param('id') id: string, @Body() doctorDto: DoctorDto) {
+    if (!isValidObjectId(id)) {
+      return { error: 'Invalid ID format' };
+    }
+    return this.doctorService.update(id, doctorDto);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   async delete(@Param('id') id: string) {
+    if (!isValidObjectId(id)) {
+      return { error: 'Invalid ID format' };
+    }
     return this.doctorService.delete(id);
   }
 }
