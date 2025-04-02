@@ -1,20 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import * as dotenv from 'dotenv';
+
+// Load environment variables from .env file
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const PORT = process.env.PORT || 3000;
+  // Enable global validation for DTOs
+  app.useGlobalPipes(new ValidationPipe({
+    transform: true,
+    forbidNonWhitelisted: true,
+    whitelist: true,
+  }));
 
-
-  try {
-    await app.listen(PORT);
-    Logger.log(`Server running on port ${PORT}`);
-  } catch (error) {
-    console.error('Error starting server:', error.message);
-    console.error('Stack trace:', error.stack || 'No stack available');
-  }
+  // Start the server and listen on port 3000
+  await app.listen(3000);
 }
-
 bootstrap();

@@ -1,19 +1,22 @@
-import { IsEmail, IsNotEmpty, IsString, Min, IsInt } from 'class-validator';
+import { IsString, IsEmail, IsInt, Min } from 'class-validator';
 
-export class DoctorDto {
+export class CreateDoctorDto {
   @IsString()
-  @IsNotEmpty()
   name: string;
 
   @IsEmail()
-  @IsNotEmpty()
   email: string;
 
   @IsString()
-  @IsNotEmpty()
   password: string;
 
   @IsInt()
-  @Min(25) 
+  @Min(25)
   age: number;
+
+  @IsString()
+  specialist: string;
+
+  @IsString()
+  role: string = 'doctor';
 }

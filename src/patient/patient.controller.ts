@@ -1,37 +1,25 @@
-import { Controller, Post, Body, Get, Param, Delete, Patch, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { PatientService } from './patient.service';
-import { PatientDto } from './patient.dto';
-import { JwtAuthGuard } from '../auth/jwt.guard';
+import { CreatePatientDto } from './patient.dto'; // ✅ Fixed import path
+import { JwtAuthGuard } from '../auth/jwt.guard'; // ✅ Fixed import path
+import { Roles } from '../guards/roles.decorator'; // ✅ Fixed import path
+import { RolesGuard } from '../guards/roles.guard'; // ✅ Fixed import path
 
-@Controller('patient')
+@Controller('patients')
 export class PatientController {
   constructor(private readonly patientService: PatientService) {}
 
-  @Post('create')
-  async create(@Body() patientDto: PatientDto) {
-    return this.patientService.create(patientDto);
+  @Post('register')
+  async register(@Body() patientDto: CreatePatientDto) {
+    return this.patientService.registerPatient(patientDto);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Get('all')
-  async findAll() {
-    return this.patientService.findAll();
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.patientService.findOne(id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch(':id')
-  async update(@Param('id') id: string, @Body() patientDto: PatientDto) {
-    return this.patientService.update(id, patientDto);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Delete(':id')
-  async delete(@Param('id') id: string) {
-    return this.patientService.delete(id);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('doctor')
+  @Get('list')
+  async getPatients() {
+    return this.patientService.getPatients();
   }
 }
+
+// ❌ Removed duplicate `export class PatientService {}` at the bottom.

@@ -1,35 +1,36 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Patient } from './patient.entity';
-import { PatientDto } from './patient.dto';
+import * as bcrypt from 'bcryptjs';
+import { Patient, PatientDocument } from './patient.schema';
+import { CreatePatientDto } from './patient.dto';
 
 @Injectable()
 export class PatientService {
-  constructor(@InjectModel(Patient.name) private patientModel: Model<Patient>) {}
+  constructor(@InjectModel(Patient.name) private patientModel: Model<PatientDocument>) {}
 
-  async create(patientDto: PatientDto) {
-    const patient = new this.patientModel(patientDto);
-    return patient.save();
-  }
+  async registerPatient(patientDto: CreatePatientDto): Promise<any> {
+    const { name, email, password, age, gender, diagnosis } = patientDto;
 
-  async findAll() {
-    return this.patientModel.find().exec();
-  }
-
-  async findOne(id: string) {
-    const patient = await this.patientModel.findById(id).exec();
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
+    if (age < 18) {
+      throw new UnauthorizedException('Patient must be at least 18 years old');
     }
-    return patient;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const patient = new this.patientModel({
+      name,
+      email,
+      password: hashedPassword,
+      age,
+      gender,
+      diagnosis,
+    });
+
+    await patient.save();
+    return { message: 'Patient registered successfully' };
   }
 
-  async update(id: string, patientDto: PatientDto) {
-    return this.patientModel.findByIdAndUpdate(id, patientDto, { new: true });
-  }
-
-  async delete(id: string) {
-    return this.patientModel.findByIdAndDelete(id).exec();
+  async getPatients() {
+    return this.patientModel.find().select('-password'); // Exclude password from response
   }
 }

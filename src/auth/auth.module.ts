@@ -1,21 +1,27 @@
-import { Module, Global } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './jwt.strategy';
+import { ConfigModule } from '@nestjs/config'; // ✅ Import ConfigModule
+import { Doctor, DoctorSchema } from '../doctor/doctor.schema';
+import { Patient, PatientSchema } from '../patient/patient.schema';
 
-@Global()   // ✅ Make the module global
 @Module({
   imports: [
-    PassportModule.register({ defaultStrategy: 'jwt' }),
+    ConfigModule.forRoot(), // ✅ Add ConfigModule to read environment variables
+    MongooseModule.forFeature([
+      { name: Doctor.name, schema: DoctorSchema },
+      { name: Patient.name, schema: PatientSchema },
+    ]),
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'default_secret',  // Use environment variable or default
-      signOptions: { expiresIn: '1h' },
+      secret: process.env.JWT_SECRET || 'your_secret_key', // ✅ Ensure JWT secret
+      signOptions: { expiresIn: '60m' },
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtModule],  // ✅ Export JwtModule and AuthService
+  exports: [AuthService],
 })
 export class AuthModule {}

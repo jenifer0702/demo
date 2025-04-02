@@ -1,8 +1,7 @@
-import { IsEmail, IsNotEmpty, IsString, IsIn } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
-  @IsNotEmpty()
   email: string;
 
   @IsString()
@@ -10,6 +9,5 @@ export class LoginDto {
   password: string;
 
   @IsString()
-  @IsIn(['doctor', 'patient'])
-  role: string;
+  role: string;  
 }
