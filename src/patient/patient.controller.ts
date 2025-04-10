@@ -1,47 +1,185 @@
-import { Controller, Post, Body, Get, UseGuards, Request, Param, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseGuards,
+  Body,
+  Get,
+  Param,
+  Request,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PatientService } from './patient.service';
-import { CreatePatientDto } from './patient.dto'; 
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { Roles } from '../guards/roles.decorator';
-import { RolesGuard } from '../guards/roles.guard';
+import { HospitalService } from '../hospital/hospital.service';
+import { TranslationService } from '../translation/translation.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Slot, SlotDocument } from '../slot/slot.schema';
+import { User, UserDocument } from '../user/user.schema';
+import { BookSlotDto } from '../slot/slot.dto';
+import * as moment from 'moment';
 
 @Controller('patients')
 export class PatientController {
-  constructor(private readonly patientService: PatientService) {}
+  constructor(
+    private readonly patientService: PatientService,
+    private readonly hospitalService: HospitalService,
+    private readonly translationService: TranslationService,
+    @InjectModel(Slot.name) private readonly slotModel: Model<SlotDocument>,
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
 
   @Post('register')
-  async register(@Body() patientDto: CreatePatientDto) {
+  async registerPatient(@Body() patientDto) {
     return this.patientService.registerPatient(patientDto);
   }
 
-  // ✅ Only Doctors Can View the List of Patients
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('doctor')
-  @Get('list')
-  async getPatients() {
-    return this.patientService.getPatients();
+  @Get('doctor/:doctorId')
+  @UseGuards(JwtAuthGuard)
+  async getPatientsByDoctor(@Param('doctorId') doctorId: string) {
+    return this.patientService.getPatientsByDoctorId(doctorId);
   }
 
-  // ✅ Only Assigned Doctor or Patient Themselves Can View Diagnosis
+  @Get('hospital/:hospitalId')
   @UseGuards(JwtAuthGuard)
-  @Get('diagnosis/:id')
-  async getDiagnosis(@Request() req, @Param('id') patientId: string) {
-    const patient = await this.patientService.getPatientById(patientId);
+  async getPatientsByHospital(@Param('hospitalId') hospitalId: string) {
+    const hospital = await this.hospitalService.findById(hospitalId);
+    if (!hospital) throw new NotFoundException('Hospital not found');
 
-    if (!patient) {
-      throw new NotFoundException('Patient not found');
+    const lang = hospital.defaultLanguage || 'en';
+    const patients = await this.patientService.getPatientsByHospital(hospitalId);
+    const translatedPatients = await this.translationService.translateList(patients, lang);
+    const message = await this.translationService.get('patient_list', lang);
+
+    return {
+      message,
+      data: translatedPatients,
+    };
+  }
+
+  @Post('book-slot')
+  @UseGuards(JwtAuthGuard)
+  async bookSlot(@Request() req, @Body() body: BookSlotDto) {
+    if (req.user.role !== 'patient') {
+      throw new ForbiddenException('Only patients can book slots.');
     }
 
-    // ✅ Allow access if the logged-in user is the assigned doctor
-    if (req.user.role === 'doctor' && req.user.userId === patient.doctorId.toString()) {
-      return patient;
+    const { specialist, date } = body;
+    const formattedDate = moment(date, 'YYYY-MM-DD').format('YYYY-MM-DD');
+
+    const doctor = await this.userModel.findOne({ specialist, role: 'doctor' });
+
+    if (!doctor) {
+      return { message: 'No doctor available for this specialist.' };
     }
 
-    // ✅ Allow access if the logged-in user is the patient themselves
-    if (req.user.role === 'patient' && req.user.userId === patientId) {
-      return patient;
+    const slot = await this.slotModel.findOneAndUpdate(
+      {
+        doctor: doctor._id,
+        date: formattedDate,
+        isBooked: false,
+        bookedBy: null,
+      },
+      {
+        isBooked: true,
+        bookedBy: req.user.userId,
+      },
+      { sort: { from: 1 }, new: true },
+    );
+
+    if (!slot) {
+      throw new NotFoundException('No available slots for this specialist on the selected date.');
     }
 
-    throw new ForbiddenException('Access denied');
+    return {
+      message: 'Slot booked successfully.',
+      data: slot,
+    };
+  }
+
+  @Get('slots')
+  @UseGuards(JwtAuthGuard)
+  async getSlotsForDoctor(@Request() req) {
+    if (req.user.role !== 'doctor') {
+      throw new ForbiddenException('Only doctors can view their slots.');
+    }
+
+    const doctorId = req.user.userId;
+    const slots = await this.slotModel.find({ doctor: doctorId }).sort({ date: 1, from: 1 });
+
+    if (!slots || slots.length === 0) {
+      throw new NotFoundException('No slots found for this doctor.');
+    }
+
+    return {
+      message: 'Doctor slots retrieved successfully.',
+      data: slots,
+    };
+  }
+
+  @Post('add-to-favourite')
+  @UseGuards(JwtAuthGuard)
+  async addToFavourite(@Request() req, @Body('doctorId') doctorId: string) {
+    if (req.user.role !== 'patient') {
+      throw new ForbiddenException('Only patients can add to favourites.');
+    }
+
+    const patient = await this.userModel.findById(req.user.userId).exec();
+    if (!patient || patient.role !== 'patient') {
+      throw new ForbiddenException('Invalid patient.');
+    }
+
+    const updatedPatient = await this.patientService.likeDoctor(
+      req.user.userId,
+      doctorId,
+    );
+
+    return {
+      message: 'Doctor added to favourites.',
+      favourites: updatedPatient.favoriteDoctors,
+    };
+  }
+
+  @Post('remove-from-favourite')
+  @UseGuards(JwtAuthGuard)
+  async removeFromFavourite(@Request() req, @Body('doctorId') doctorId: string) {
+    if (req.user.role !== 'patient') {
+      throw new ForbiddenException('Only patients can remove from favourites.');
+    }
+
+    const patient = await this.userModel.findById(req.user.userId).exec();
+    if (!patient || patient.role !== 'patient') {
+      throw new ForbiddenException('Invalid patient.');
+    }
+
+    const updatedPatient = await this.patientService.unlikeDoctor(
+      req.user.userId,
+      doctorId,
+    );
+
+    return {
+      message: 'Doctor removed from favourites.',
+      favourites: updatedPatient.favoriteDoctors,
+    };
+  }
+
+  @Get('favourite-list')
+  @UseGuards(JwtAuthGuard)
+  async getFavouriteList(@Request() req) {
+    if (req.user.role !== 'patient') {
+      throw new ForbiddenException('Only patients can view favourite list.');
+    }
+
+    const patient = await this.userModel.findById(req.user.userId).exec();
+    if (!patient || patient.role !== 'patient') {
+      throw new ForbiddenException('Invalid patient.');
+    }
+
+    const favourites = await this.patientService.getFavoriteDoctors(req.user.userId);
+    return {
+      message: 'Favourite doctor list fetched successfully.',
+      data: favourites,
+    };
   }
 }

@@ -1,17 +1,26 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PatientController } from './patient.controller';
 import { PatientService } from './patient.service';
-import { Patient, PatientSchema } from './patient.schema';
-import { AuthModule } from '../auth/auth.module'; // ✅ Import AuthModule to access AuthService
+import { PatientController } from './patient.controller';
+import { AuthModule } from '../auth/auth.module';
+import { DoctorModule } from '../doctor/doctor.module';
+import { HospitalModule } from '../hospital/hospital.module';
+import { TranslationModule } from '../translation/translation.module';
+import { User, UserSchema } from '../user/user.schema'; 
+import {Slot,SlotSchema } from '../slot/slot.schema';// ✅ unified user model
+import { SlotModule } from 'src/slot/slot.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Patient.name, schema: PatientSchema }]),
-    AuthModule, // ✅ AuthService is now accessible
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]), // ✅ use unified user schema
+    forwardRef(() => AuthModule),
+    forwardRef(() => DoctorModule),
+    HospitalModule,
+    TranslationModule,
+    SlotModule,
   ],
   controllers: [PatientController],
-  providers: [PatientService], // ❌ Remove JwtAuthGuard from providers (it's used in guards, not here)
+  providers: [PatientService],
   exports: [PatientService],
 })
 export class PatientModule {}

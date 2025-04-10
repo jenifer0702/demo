@@ -1,20 +1,23 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { JwtModule } from '@nestjs/jwt';
-import { Doctor, DoctorSchema } from './doctor.schema';
-import { DoctorController } from './doctor.controller';
 import { DoctorService } from './doctor.service';
-import { JwtAuthGuard } from '../auth/jwt.guard';
-import { AuthModule } from '../auth/auth.module'; 
+import { DoctorController } from './doctor.controller';
+import { Slot, SlotSchema } from '../slot/slot.schema';
+import { User, UserSchema } from '../user/user.schema'; // Unified user model
+import { HospitalModule } from '../hospital/hospital.module';
+import { TranslationModule } from '../translation/translation.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Doctor.name, schema: DoctorSchema }]),
-    AuthModule, 
-    JwtModule.register({ secret: 'hardcoded_secret_key', signOptions: { expiresIn: '1h' } }), 
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },  // Use unified User model
+      { name: Slot.name, schema: SlotSchema },  // Slot model
+    ]),
+    HospitalModule,  // Ensure that hospital-related functionality is integrated
+    TranslationModule,  // To handle translations for different languages
   ],
   controllers: [DoctorController],
-  providers: [DoctorService, JwtAuthGuard],
-  exports: [DoctorService],
+  providers: [DoctorService],
+  exports: [DoctorService],  // Allow other modules to use the DoctorService
 })
 export class DoctorModule {}

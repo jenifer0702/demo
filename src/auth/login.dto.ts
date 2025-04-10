@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsNotEmpty } from 'class-validator';
+import { IsEmail, IsString, IsNotEmpty, IsIn, MinLength } from 'class-validator';
 
 export class LoginDto {
   @IsEmail()
@@ -6,8 +6,10 @@ export class LoginDto {
 
   @IsString()
   @IsNotEmpty()
+  @MinLength(6)  // Ensure the password has at least 6 characters
   password: string;
 
   @IsString()
+  @IsIn(['doctor', 'patient'])  // Role must be either 'doctor' or 'patient'
   role: string;  
 }

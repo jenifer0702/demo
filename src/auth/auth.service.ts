@@ -1,102 +1,67 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import * as bcrypt from 'bcryptjs';
+import {
+  Injectable,
+  UnauthorizedException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Doctor, DoctorDocument } from '../doctor/doctor.schema';
-import { Patient, PatientDocument } from '../patient/patient.schema';
+import * as bcrypt from 'bcryptjs';
+import { UserService } from '../user/user.service';
+import { CreateDoctorDto } from '../user/doctor.dto';
+import { CreatePatientDto } from '../user/patient.dto';
+import { Role } from '../user/role.enum';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(Doctor.name) private doctorModel: Model<DoctorDocument>,
-    @InjectModel(Patient.name) private patientModel: Model<PatientDocument>,
-    private jwtService: JwtService
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
   ) {}
 
-  /**
-   * Register a new doctor
-   */
-  async registerDoctor(doctorDto: any): Promise<any> {
-    const { name, email, password, age, specialist } = doctorDto;
-
-    if (age < 25) {
-      throw new UnauthorizedException('Doctor must be at least 25 years old');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const doctor = new this.doctorModel({
-      name,
-      email,
-      password: hashedPassword,
-      age,
-      specialist,
-      role: 'doctor', // ✅ Ensure role exists
-    });
-
-    await doctor.save();
-    return { message: 'Doctor registered successfully' };
+  // Register a new doctor
+  async registerDoctor(doctorDto: CreateDoctorDto) {
+    doctorDto.email = doctorDto.email.trim().toLowerCase();
+    return this.userService.createDoctor(doctorDto);
   }
 
-  /**
-   * Register a new patient
-   */
-  async registerPatient(patientDto: any): Promise<any> {
-    const { name, email, password, age, gender, diagnosis, doctorId } = patientDto;
-
-    if (age < 18) {
-      throw new UnauthorizedException('Patient must be at least 18 years old');
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const patient = new this.patientModel({
-      name,
-      email,
-      password: hashedPassword,
-      age,
-      gender,
-      diagnosis,
-      doctorId,
-      role: 'patient', // ✅ Ensure role exists
-    });
-
-    await patient.save();
-    return { message: 'Patient registered successfully' };
+  // Register a new patient
+  async registerPatient(patientDto: CreatePatientDto) {
+    patientDto.email = patientDto.email.trim().toLowerCase();
+    return this.userService.createPatient(patientDto);
   }
 
-  /**
-   * Login a user (either doctor or patient)
-   */
-  async login(email: string, password: string) {
-    const user =
-      (await this.doctorModel.findOne({ email }).select('+password +role')) ||
-      (await this.patientModel.findOne({ email }).select('+password +role'));
+  // Login with role validation
+  async login(email: string, password: string, role: Role) {
+    const normalizedEmail = email.trim().toLowerCase();
+    console.log('Login attempt with normalized email:', normalizedEmail);
+
+    const user = await this.userService.findByEmail(normalizedEmail);
 
     if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== role) {
+      throw new UnauthorizedException(
+        `Unauthorized role access. Expected ${role}, found ${user.role}`,
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    const payload = {
+      userId: (user._id as Types.ObjectId).toString(),
+      email: user.email,
+      role: user.role,
+      hospitalId: user.hospitalId?.toString() || null,
+    };
 
-    // ✅ Ensure role is included in payload
-    const payload = { sub: user._id, email: user.email, role: user.role };
-    return { access_token: this.jwtService.sign(payload) };
-  }
-
-  /**
-   * Get a list of all doctors
-   */
-  async findDoctors() {
-    return this.doctorModel.find().select('-password'); // ✅ Exclude password
-  }
-
-  /**
-   * Get a list of all patients (only for doctors)
-   */
-  async findPatients() {
-    return this.patientModel.find().select('-password'); // ✅ Exclude password
+    return {
+      access_token: this.jwtService.sign(payload),
+    };
   }
 }
