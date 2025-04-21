@@ -1,26 +1,25 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-
 import { User, UserSchema } from './user.schema';
-import { Doctor, DoctorSchema } from './doctor.schema';
-import { Patient, PatientSchema } from './patient.schema';
+import { DoctorSchema } from './doctor.schema';
+import { PatientSchema } from './patient.schema';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
+    MongooseModule.forFeatureAsync([
       {
         name: User.name,
-        schema: UserSchema,
-      },
-      {
-        name: Doctor.name,
-        schema: DoctorSchema,
-      },
-      {
-        name: Patient.name,
-        schema: PatientSchema,
+        useFactory: () => {
+          const schema = UserSchema;
+
+          // Register Doctor and Patient as discriminators
+          schema.discriminator('Doctor', DoctorSchema);
+          schema.discriminator('Patient', PatientSchema);
+
+          return schema;
+        },
       },
     ]),
   ],

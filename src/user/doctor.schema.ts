@@ -1,12 +1,13 @@
+// doctor.schema.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
-export class Doctor {
+export class DoctorExtension {
   @Prop({ required: true })
   specialist: string;
 
-  @Prop({ default: [] })
-  slots: string;
+  @Prop({ type: [String], default: [] })
+  slots: string[];
 }
 
-export const DoctorSchema = SchemaFactory.createForClass(Doctor);
+export const DoctorSchema = SchemaFactory.createForClass(DoctorExtension);

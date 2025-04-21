@@ -41,13 +41,13 @@ import {
   
       const hashedPassword = await this.hashPassword(dto.password);
   
-      const createdDoctor = new this.userModel({
+      const doctor = new this.userModel({
         ...dto,
         password: hashedPassword,
         role: Role.Doctor,
       });
   
-      return createdDoctor.save();
+      return doctor.save();
     }
   
     async createPatient(dto: CreatePatientDto): Promise<UserDocument> {
@@ -62,13 +62,13 @@ import {
   
       const hashedPassword = await this.hashPassword(dto.password);
   
-      const createdPatient = new this.userModel({
+      const patient = new this.userModel({
         ...dto,
         password: hashedPassword,
         role: Role.Patient,
       });
   
-      return createdPatient.save();
+      return patient.save();
     }
   
     async findByEmail(email: string): Promise<UserDocument> {
@@ -103,13 +103,20 @@ import {
       const patient = await this.userModel.findById(patientObjectId);
       if (!patient) throw new NotFoundException('Patient not found');
   
-      if (!patient.favoriteDoctors) {
+      if (!Array.isArray(patient.favoriteDoctors)) {
         patient.favoriteDoctors = [];
       }
   
-      const alreadyLiked = patient.favoriteDoctors.some((id) => id.equals(doctorObjectId));
+      const alreadyLiked = patient.favoriteDoctors.some((id) =>
+        id.toString() === doctorObjectId.toString()
+
+      );
+  
       if (!alreadyLiked) {
-        patient.favoriteDoctors.push(doctorObjectId);
+        
+ patient.favoriteDoctors.push(doctorObjectId as any);
+// Works fine if favoriteDoctors is ObjectId[]
+
         await patient.save();
       }
   
@@ -124,7 +131,8 @@ import {
       if (!patient) throw new NotFoundException('Patient not found');
   
       patient.favoriteDoctors = (patient.favoriteDoctors || []).filter(
-        (id) => !id.equals(doctorObjectId),
+        (id) => id.toString() !== doctorObjectId.toString(),
+
       );
   
       await patient.save();
@@ -132,22 +140,20 @@ import {
     }
   
     async getFavoriteDoctors(patientId: string): Promise<UserDocument[]> {
-        const patientObjectId = this.validateObjectId(patientId, 'patientId');
-      
-        const patient = await this.userModel
-          .findById(patientObjectId)
-          .populate({
-            path: 'favoriteDoctors',
-            model: this.userModel, // explicitly use the User model
-          })
-          .exec();
-      
-        if (!patient) throw new NotFoundException('Patient not found');
-      
-        // Ensure the result is cast correctly now that population is done
-        return patient.favoriteDoctors as unknown as UserDocument[];
-      }
-      
+      const patientObjectId = this.validateObjectId(patientId, 'patientId');
+  
+      const patient = await this.userModel
+        .findById(patientObjectId)
+        .populate({
+          path: 'favoriteDoctors',
+          model: this.userModel,
+        })
+        .exec();
+  
+      if (!patient) throw new NotFoundException('Patient not found');
+  
+      return (patient.favoriteDoctors || []) as unknown as UserDocument[];
+    }
   
     async getAllDoctors(): Promise<UserDocument[]> {
       return this.userModel.find({ role: Role.Doctor }).exec();

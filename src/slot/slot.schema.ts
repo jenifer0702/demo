@@ -1,14 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
-import { User } from '../user/user.schema'; // ✅ Use the unified User schema
+import { Document } from 'mongoose';
+import mongoose from 'mongoose';
 
-@Schema()
+export type SlotDocument = Slot & Document; // ✅ THIS is what was missing
+
+@Schema({ timestamps: true })
 export class Slot {
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+  doctorId: mongoose.Types.ObjectId;
+
   @Prop({ required: true })
   specialist: string;
-
-  @Prop({ type: Types.ObjectId, ref: User.name, required: true }) // doctor = user with role: doctor
-  doctor: Types.ObjectId;
 
   @Prop({ required: true })
   date: string;
@@ -22,10 +24,8 @@ export class Slot {
   @Prop({ default: false })
   isBooked: boolean;
 
-  @Prop({ type: Types.ObjectId, ref: User.name, default: null }) // bookedBy = user with role: patient
-  bookedBy: Types.ObjectId | null;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  patientId?: mongoose.Types.ObjectId;
 }
-
-export type SlotDocument = Slot & Document;
 
 export const SlotSchema = SchemaFactory.createForClass(Slot);

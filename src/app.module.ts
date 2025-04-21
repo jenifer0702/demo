@@ -8,6 +8,7 @@ import { HospitalModule } from './hospital/hospital.module';
 import { ContentModule } from './content/content.module';
 import { TranslationModule } from './translation/translation.module';
 import { SlotModule } from './slot/slot.module'; // Ensure this is imported
+import { MedicationRequestModule } from './medication-request/medication-request.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { SlotModule } from './slot/slot.module'; // Ensure this is imported
     HospitalModule,
     ContentModule,
     TranslationModule,
-    SlotModule, // Ensure this is included here as well
+    SlotModule,
+    MedicationRequestModule // Ensure this is included here as well
   ],
 })
 export class AppModule {}

@@ -19,6 +19,8 @@ import { Slot, SlotDocument } from '../slot/slot.schema';
 import { User, UserDocument } from '../user/user.schema';
 import { BookSlotDto } from '../slot/slot.dto';
 import * as moment from 'moment';
+import { Role } from '../user/role.enum'; // adjust the path if needed
+
 
 @Controller('patients')
 export class PatientController {
@@ -126,7 +128,7 @@ export class PatientController {
     }
 
     const patient = await this.userModel.findById(req.user.userId).exec();
-    if (!patient || patient.role !== 'patient') {
+    if (!patient || patient.role !== Role.Patient) {
       throw new ForbiddenException('Invalid patient.');
     }
 
@@ -149,7 +151,7 @@ export class PatientController {
     }
 
     const patient = await this.userModel.findById(req.user.userId).exec();
-    if (!patient || patient.role !== 'patient') {
+    if (!patient || patient.role !== Role.Patient) {
       throw new ForbiddenException('Invalid patient.');
     }
 
@@ -172,7 +174,7 @@ export class PatientController {
     }
 
     const patient = await this.userModel.findById(req.user.userId).exec();
-    if (!patient || patient.role !== 'patient') {
+    if (!patient || patient.role !== Role.Patient) {
       throw new ForbiddenException('Invalid patient.');
     }
 

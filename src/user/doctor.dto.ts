@@ -25,6 +25,5 @@ export class CreateDoctorDto {
   @IsMongoId({ message: 'Invalid hospitalId format' })
   hospitalId: string;
 
-  @IsNotEmpty()
-  role: string;
+  
 }

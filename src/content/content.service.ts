@@ -1,16 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Doctor } from '../user/doctor.schema';
 import { Hospital } from '../hospital/hospital.schema';
+import { User, UserDocument } from '../user/user.schema';
 import { TranslationService } from '../translation/translation.service';
 
 @Injectable()
 export class ContentService {
   constructor(
     @InjectModel(Hospital.name) private hospitalModel: Model<Hospital>,
-    @InjectModel(Doctor.name) private doctorModel: Model<Doctor>,
-    private readonly translationService: TranslationService
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private readonly translationService: TranslationService,
   ) {}
 
   async getHospitalContent(hospitalId: string) {
@@ -26,12 +26,15 @@ export class ContentService {
       throw new NotFoundException('Hospital content not found.');
     }
 
-    const doctors = await this.doctorModel.find({ hospitalId: objectId }).lean();
-    const specialists = [...new Set(doctors.map(doc => doc.specialist))];
+    // 🔍 Find users with role "Doctor" and hospitalId
+    const doctors = await this.userModel
+      .find({ role: 'Doctor', hospitalId: objectId })
+      .lean();
+
+      const specialists = [...new Set(doctors.map((doc) => (doc as any).specialist))];
 
     const lang = hospital.defaultLanguage || 'en';
 
-    
     const welcomeMessage = await this.translationService.getTranslation('welcome_message', lang);
     const hospitalNameKey = await this.translationService.getTranslation('hospitalName', lang);
     const totalDoctorsKey = await this.translationService.getTranslation('totalDoctors', lang);

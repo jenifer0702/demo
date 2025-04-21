@@ -16,13 +16,22 @@ export class DoctorService {
   async createDoctor(doctorDto: CreateDoctorDto): Promise<UserDocument> {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(doctorDto.password, salt);
-    doctorDto.password = hashedPassword;
-    doctorDto.role = Role.Doctor; // Ensure the role is explicitly set
-
-    const doctor = new this.userModel(doctorDto);
+  
+    const doctorModel = this.userModel.discriminators?.Doctor;
+    if (!doctorModel) {
+      throw new Error('Doctor discriminator is not registered');
+    }
+  
+    const doctor = new doctorModel({
+      ...doctorDto,
+      password: hashedPassword,
+      role: Role.Doctor, // ✅ Inject role here instead of modifying DTO
+    });
+  
     await doctor.save();
-    return doctor; // returning UserDocument
+    return doctor;
   }
+  
 
   // ✅ Find doctor by email and include password (important for login)
   async findByEmail(email: string): Promise<UserDocument | null> {
