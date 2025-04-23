@@ -7,7 +7,7 @@ import {
     Req,
     BadRequestException,
   } from '@nestjs/common';
-  import { MedicationRequestService } from './medication-request.service';
+  import { MedicationRequestService } from '../service/medication-request.service';
   import { AuthGuard } from '@nestjs/passport';
   import { RolesGuard } from '../guards/roles.guard';
   import { Roles } from '../guards/roles.decorator';

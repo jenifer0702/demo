@@ -7,9 +7,9 @@ import {
     UseGuards,
     Req,
   } from '@nestjs/common';
-  import { UserService } from './user.service';
-  import { CreateDoctorDto } from './doctor.dto';
-  import { CreatePatientDto } from './patient.dto';
+  import { UserService } from '../service/user.service';
+  import { CreateDoctorDto } from '../dto/doctor.dto';
+  import { CreatePatientDto } from '../dto/patient.dto';
   import { JwtAuthGuard } from '../auth/jwt.guard';
   
   @Controller('users')

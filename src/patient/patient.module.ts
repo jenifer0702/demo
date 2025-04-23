@@ -1,6 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { PatientService } from './patient.service';
+import { PatientService } from '../service/patient.service';
 import { PatientController } from './patient.controller';
 import { AuthModule } from '../auth/auth.module';
 import { DoctorModule } from '../doctor/doctor.module';

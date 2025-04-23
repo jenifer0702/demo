@@ -1,8 +1,8 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { CreateDoctorDto } from '../user/doctor.dto';
-import { CreatePatientDto } from '../user/patient.dto';
-import { LoginDto } from './login.dto';
+import { AuthService } from '../service/auth.service';
+import { CreateDoctorDto } from '../dto/doctor.dto';
+import { CreatePatientDto } from '../dto/patient.dto';
+import { LoginDto } from '../dto/login.dto';
 import { Role } from 'src/user/role.enum';
 
 @Controller('auth')

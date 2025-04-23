@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Body, Req, UseGuards, BadRequestException } from '@nestjs/common';
-import { MedicationRequestService } from './medication-request.service';
+import { MedicationRequestService } from '../service/medication-request.service';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateMedicationRequestDto } from './create-medication-request.dto';
+import { CreateMedicationRequestDto } from '../dto/create-medication-request.dto';
 
 @Controller('patient')
 @UseGuards(AuthGuard('jwt'))

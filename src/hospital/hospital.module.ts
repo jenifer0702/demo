@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { HospitalController } from './hospital.controller';
-import { HospitalService } from './hospital.service';
+import { HospitalService } from '../service/hospital.service';
 import { Hospital, HospitalSchema } from './hospital.schema';
 
 import { TranslationModule } from '../translation/translation.module';

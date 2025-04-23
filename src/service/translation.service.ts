@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Translation, TranslationDocument } from './translation.schema';
+import { Translation, TranslationDocument } from '../translation/translation.schema';
 
 @Injectable()
 export class TranslationService implements OnModuleInit {

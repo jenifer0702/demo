@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Translation, TranslationSchema } from './translation.schema';
 import { TranslationController } from './translation.controller';
-import { TranslationService } from './translation.service';
+import { TranslationService } from '../service/translation.service';
 
 @Module({
   imports: [

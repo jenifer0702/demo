@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DoctorService } from './doctor.service';
+import { DoctorService } from '../service/doctor.service';
 import { DoctorController } from './doctor.controller';
 import { Slot, SlotSchema } from '../slot/slot.schema';
 import { User, UserSchema } from '../user/user.schema'; // Unified user model

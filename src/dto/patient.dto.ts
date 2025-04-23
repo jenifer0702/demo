@@ -1,5 +1,5 @@
 import { IsEmail, IsNotEmpty, MinLength, Matches, IsInt, Min, IsMongoId, IsIn, IsEnum } from 'class-validator';
-import { Role } from './role.enum';  // Importing Role enum for role validation
+import { Role } from '../user/role.enum';  // Importing Role enum for role validation
 
 export class CreatePatientDto {
   @IsNotEmpty()

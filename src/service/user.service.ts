@@ -8,10 +8,10 @@ import {
   import { Model, Types } from 'mongoose';
   import * as bcrypt from 'bcrypt';
   
-  import { User, UserDocument } from './user.schema';
-  import { CreateDoctorDto } from './doctor.dto';
-  import { CreatePatientDto } from './patient.dto';
-  import { Role } from './role.enum';
+  import { User, UserDocument } from '../user/user.schema';
+  import { CreateDoctorDto } from '../dto/doctor.dto';
+  import { CreatePatientDto } from '../dto/patient.dto';
+  import { Role } from '../user/role.enum';
   
   @Injectable()
   export class UserService {

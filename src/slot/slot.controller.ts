@@ -1,10 +1,10 @@
 import { Controller, NotFoundException, Post, Param, Body, Delete, Get, Query, UseGuards, Req, Patch, BadRequestException } from '@nestjs/common';
-import { SlotService } from './slot.service';
-import { CreateSlotDto } from './create-slot.dto';
+import { SlotService } from '../service/slot.service';
+import { CreateSlotDto } from '../dto/create-slot.dto';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
-import { AddPrescriptionDto } from './prescription.dto';
+import { AddPrescriptionDto } from '../dto/prescription.dto';
 import { Role } from '../user/role.enum'; // Adjust the path if necessary
 
 @Controller('slot')
@@ -82,27 +82,11 @@ export class SlotController {
 
   // Endpoint for removing prescription by doctor
   @Delete('doctor/remove-prescription/:slotId')
-  @UseGuards(JwtAuthGuard)  // Ensures only authenticated users can access
-  @Roles(Role.Doctor)  // Ensures that only doctors can access this route
-  async removePrescription(@Param('slotId') slotId: string, @Req() req: any) {
-    const slot = await this.slotService.findSlotById(slotId);  // Use the service to get the slot
+@UseGuards(JwtAuthGuard)
+@Roles(Role.Doctor)
+async removePrescription(@Param('slotId') slotId: string, @Req() req: any) {
+  const currentDoctorId = req.user.userId;
+  return await this.slotService.removePrescription(slotId, currentDoctorId);
+}
 
-    if (!slot) {
-      throw new NotFoundException('Slot not found');
-    }
-
-    if (!slot.isBooked) {
-      throw new BadRequestException('Slot is not booked yet');
-    }
-
-    // Get doctorId from JWT (userId in JWT is the doctor's ID)
-    const currentDoctorId = req.user.userId?.toString().trim();
-
-    if (!slot.doctorId || slot.doctorId.toString() !== currentDoctorId) {
-      throw new BadRequestException('You are not authorized to remove prescription from this slot');
-    }
-
-    slot.prescription = [];  // Remove all prescriptions
-    return await slot.save();
-  }
 }

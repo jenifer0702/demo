@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Slot, SlotDocument } from './slot.schema';
-import { CreateSlotDto } from './create-slot.dto';
-import { AddPrescriptionDto } from './prescription.dto';
+import { Slot, SlotDocument } from '../slot/slot.schema';
+import { CreateSlotDto } from '../dto/create-slot.dto';
+import { AddPrescriptionDto } from '../dto/prescription.dto';
 import{Request}from 'express'; 
 
 @Injectable()

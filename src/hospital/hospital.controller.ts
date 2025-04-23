@@ -1,9 +1,9 @@
 import { Controller, Get, Post, Body, Param, NotFoundException, UseGuards } from '@nestjs/common';
-import { HospitalService } from './hospital.service';
+import { HospitalService } from '../service/hospital.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
-import { TranslationService } from '../translation/translation.service';
+import { TranslationService } from '../service/translation.service';
 
 @Controller('hospitals')
 export class HospitalController {

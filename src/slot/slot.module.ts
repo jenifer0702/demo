@@ -1,6 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { SlotService } from './slot.service';
+import { SlotService } from '../service/slot.service';
 import { SlotController } from './slot.controller';
 import { Slot, SlotSchema } from './slot.schema';
 import { DoctorModule } from '../doctor/doctor.module';

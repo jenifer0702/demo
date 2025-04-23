@@ -8,15 +8,15 @@ import {
   ForbiddenException,
   Param,
 } from '@nestjs/common';
-import { DoctorService } from './doctor.service';
+import { DoctorService } from '../service/doctor.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { HospitalService } from '../hospital/hospital.service';
-import { TranslationService } from '../translation/translation.service';
+import { HospitalService } from '../service/hospital.service';
+import { TranslationService } from '../service/translation.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Slot, SlotDocument } from '../slot/slot.schema';
 import * as moment from 'moment';
-import { SetAvailabilityDto } from '../slot/seat-avaliability.dto';
+import { SetAvailabilityDto } from '../dto/seat-avaliability.dto';
 
 @Controller('doctors')
 export class DoctorController {

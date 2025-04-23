@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Hospital } from './hospital.schema';
+import { Hospital } from '../hospital/hospital.schema';
 import { User, UserDocument } from '../user/user.schema';
 import { Role } from '../user/role.enum';
 

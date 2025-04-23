@@ -5,9 +5,9 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
-import { UserService } from '../user/user.service';
-import { CreateDoctorDto } from '../user/doctor.dto';
-import { CreatePatientDto } from '../user/patient.dto';
+import { UserService } from './user.service';
+import { CreateDoctorDto } from '../dto/doctor.dto';
+import { CreatePatientDto } from '../dto/patient.dto';
 import { Types } from 'mongoose';
 
 @Injectable()

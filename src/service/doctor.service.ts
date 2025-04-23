@@ -4,7 +4,7 @@ import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { User, UserDocument } from '../user/user.schema';
 import { Role } from '../user/role.enum';
-import { CreateDoctorDto } from '../user/doctor.dto'; // Ensure to create a DTO for doctor creation
+import { CreateDoctorDto } from '../dto/doctor.dto'; // Ensure to create a DTO for doctor creation
 
 @Injectable()
 export class DoctorService {

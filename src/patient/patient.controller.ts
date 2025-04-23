@@ -9,15 +9,15 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { PatientService } from './patient.service';
+import { PatientService } from '../service/patient.service';
 import { JwtAuthGuard } from '../auth/jwt.guard';
-import { HospitalService } from '../hospital/hospital.service';
-import { TranslationService } from '../translation/translation.service';
+import { HospitalService } from '../service/hospital.service';
+import { TranslationService } from '../service/translation.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Slot, SlotDocument } from '../slot/slot.schema';
 import { User, UserDocument } from '../user/user.schema';
-import { BookSlotDto } from '../slot/slot.dto';
+import { BookSlotDto } from '../dto/slot.dto';
 import * as moment from 'moment';
 import { Role } from '../user/role.enum'; // adjust the path if needed
 

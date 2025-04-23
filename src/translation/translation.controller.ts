@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Query } from '@nestjs/common';
-import { TranslationService } from './translation.service';
+import { TranslationService } from '../service/translation.service';
 
 @Controller('translations')
 export class TranslationController {

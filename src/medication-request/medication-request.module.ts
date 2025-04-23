@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MedicationRequest, MedicationRequestSchema } from './medication-request.schema';
-import { MedicationRequestService } from './medication-request.service';
+import { MedicationRequestService } from '../service/medication-request.service';
 import { PatientMedicationController } from './patient-medication.controller';
 import { AdminMedicationController } from './admin-medication.controller';
 
