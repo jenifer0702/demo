@@ -1,31 +1,46 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import mongoose from 'mongoose';
+import { Document, Types } from 'mongoose';
+import * as mongoose from 'mongoose';
 
-export type SlotDocument = Slot & Document; // ✅ THIS is what was missing
+@Schema({ _id: false })
+export class PrescriptionItem {
+  @Prop({ required: true })
+  medicine: string;
 
-@Schema({ timestamps: true })
-export class Slot {
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  doctorId: mongoose.Types.ObjectId;
+  @Prop({ required: true })
+  dose: string;
+}
+
+export const PrescriptionItemSchema = SchemaFactory.createForClass(PrescriptionItem);
+
+@Schema()
+export class Slot extends Document {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  doctorId: Types.ObjectId;
 
   @Prop({ required: true })
   specialist: string;
 
   @Prop({ required: true })
-  date: string;
+  from: Date;
 
   @Prop({ required: true })
-  from: string;
+  to: Date;
 
   @Prop({ required: true })
-  to: string;
+  date: Date;
 
   @Prop({ default: false })
   isBooked: boolean;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
-  patientId?: mongoose.Types.ObjectId;
+  @Prop({ type: [PrescriptionItemSchema], default: [] })
+  prescription: PrescriptionItem[];
+
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null })
+  patientId: mongoose.Types.ObjectId | null;
 }
 
 export const SlotSchema = SchemaFactory.createForClass(Slot);
+
+// ✅ THIS IS THE CRUCIAL LINE
+export type SlotDocument = Slot & Document;

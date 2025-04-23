@@ -1,4 +1,3 @@
-// user.providers.ts
 import { Connection } from 'mongoose';
 import { UserSchema } from './user.schema';
 import { DoctorSchema } from './doctor.schema';

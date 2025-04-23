@@ -70,7 +70,6 @@ export class DoctorController {
     console.log('Fetching patients for doctor:', req.user.userId);
     return this.doctorService.getPatientsByDoctorId(req.user.userId);
   }
-
   @Post('availability')
   @UseGuards(JwtAuthGuard)
   async setAvailability(@Request() req, @Body() body: SetAvailabilityDto) {
@@ -78,76 +77,82 @@ export class DoctorController {
       console.log('Forbidden: Only doctors can set availability.');
       throw new ForbiddenException('Only doctors can set availability.');
     }
-
+  
+    // Log req.user to check if specialist is available
+    console.log('req.user:', req.user); // Check if 'specialist' is in req.user
+  
     const { from, to, date } = body;
     const slots: SlotDocument[] = [];
-
+  
     console.log(`Doctor ${req.user.userId} is setting availability from ${from} to ${to} on ${date}`);
-
+  
     const start = moment(`${date} ${from}`, 'YYYY-MM-DD HH:mm');
     const end = moment(`${date} ${to}`, 'YYYY-MM-DD HH:mm');
-    
+  
     console.log(`Start time: ${start.format()}`);
     console.log(`End time: ${end.format()}`);
-
+  
     const existingSlots = await this.slotModel.find({
       doctor: req.user.userId,
       date,
     });
-
+  
     console.log('Existing slots:', existingSlots);
-
+  
     const totalDuration = moment.duration(end.diff(start)).asMinutes();
     const breakStart = start.clone().add(totalDuration / 2, 'minutes');
     const breakEnd = breakStart.clone().add(60, 'minutes');
-
+  
     console.log(`Total duration: ${totalDuration} minutes`);
     console.log(`Break Start: ${breakStart.format()}`);
     console.log(`Break End: ${breakEnd.format()}`);
-
+  
     let current = start.clone();
-
+  
     console.log(`Generating slots for doctor with ID ${req.user.userId}...`);
-
+  
     while (current.isBefore(end)) {
       const slotEnd = current.clone().add(15, 'minutes');
       if (slotEnd.isAfter(end)) break;
-
+  
       const isOverlap = existingSlots.some(slot =>
         current.isBetween(moment(slot.from, 'HH:mm'), moment(slot.to, 'HH:mm'), null, '[)'),
       );
-
+  
       console.log(`Checking overlap: ${current.format('HH:mm')} - ${slotEnd.format('HH:mm')}`);
       console.log(`Is overlap: ${isOverlap}`);
-
+  
       if (!isOverlap) {
         if (current.isBefore(breakStart) || current.isSameOrAfter(breakEnd)) {
           const slot = new this.slotModel({
             doctor: req.user.userId,
+            specialist: req.user.specialist,  // Check if this field is available
             date,
             from: current.format('HH:mm'),
             to: slotEnd.format('HH:mm'),
             isBooked: false,
           });
-
+  
           console.log(`Creating new slot from ${current.format('HH:mm')} to ${slotEnd.format('HH:mm')}`);
-
+  
           await slot.save();
           slots.push(slot);
         }
       }
-
+  
       current.add(15, 'minutes');
     }
-
+  
     console.log(`Total slots created: ${slots.length}`);
-
+  
     return {
       message: 'Availability set successfully.',
       slots,
     };
   }
-
+  
+  
+ 
 
   @Get('slots')
   @UseGuards(JwtAuthGuard)

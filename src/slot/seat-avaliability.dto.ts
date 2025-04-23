@@ -4,12 +4,15 @@ export class SetAvailabilityDto {
   @IsString()
   specialist: string; 
 
-  @IsDateString()
+  @IsString()
+  doctorId:string;
+
+  @IsString()
   date: string; 
 
-  @IsDateString()
+  @IsString()
   from: string; 
 
-  @IsDateString()
+  @IsString()
   to: string; 
 }
